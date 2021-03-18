@@ -3,71 +3,80 @@ import './App.css';
 import ResultComponent from './components/ResultComponent';
 import KeypadComponent from './components/KeypadComponent';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
+class App extends React.Component{
+  constructor() {
+    super();
     this.state = {
-      result:''
-    }
+      result:  '0',
+      decimalCheck: true
+    };
   }
-
-  onClick = button => {
-
-    if(button === '='){
-        this.calculate()
-    }
-
-    else if(button === 'AC'){
-        this.reset()
-    }
-    else if(button === 'back'){
-        this.backspace()
-    }
-
-    else {
+  
+  onClick = (key) => {
+    const operator = ['+', '-', '*', '/'];
+    if (key === '=') {
+      this.calculate();
+    } else if (key ==='←'){
+      this.setState({
+        result: this.state.result.slice(0, -1) 
+      });
+    } else if (key === 'AC') {
+      this.clear();
+    } else if (key === '.') {
+        if (this.state.decimalCheck) {
+          this.setState({
+            result: this.state.result === '0' ? key : this.state.result + key,
+            decimalCheck: false
+          });
+        }
+    } else{
+      if (operator.includes(key)) {
+        let now = this.state.result[this.state.result.length -1];
+        let then = this.state.result[this.state.result.length -2];
+        let so = this.state.result;
+        if (key != '-') {
+          if (now == '-' && operator.includes(then)) {
+            so = this.state.result.slice(0, -1);
+            so = so.slice(0, -1);
+          } else if (operator.includes(now)) {
+            so = this.state.result.slice(0, -1);
+          }
+        }
         this.setState({
-            result: this.state.result + button
-        })
+          result: this.state.result === '0' ? key : so + key,
+          decimalCheck: true
+        });
+      } else {
+        this.setState({
+          result: this.state.result ==='0' ? key : this.state.result + key
+        });
+      }
     }
-};
-
+  };
+  
+  
   calculate = () => {
     try {
-        this.setState({
-            result: (eval(this.state.result) || '' ) + '' //NEVER use eval! unless you dont super care because its a one page calculator..
-        })
+      this.setState({
+        result: (eval(this.state.result) || '0') + ''
+      });
     } catch (e) {
-        this.setState({
-            result: 'error'
-        })
-
+      this.setState({
+        result: 'error'
+      });
     }
-};
-
-reset = () => {
+  }
+  
+  clear = () => {
     this.setState({
-        result: ''
-    })
-};
-
-backspace = () => {
-    this.setState({
-        result: this.state.result.slice(0, -1)
-    })
-};
-
-  render(){
-    return (
-      <div>
-        <div className='calculator-body' id='calculator'>
-          <h1>js calculator</h1>
-          <ResultComponent result={this.state.result}/>
-          <KeypadComponent onClick={this.onClick} />
-        </div>
-      </div>
-  );
-
-  }  
-}
+      result:'0',
+      decimalCheck: true
+    });  
+  }; 
+  
+  render() { 
+   return <KeypadComponent result={this.state.result} onClick={this.onClick} />;
+    }
+  }
 
 export default App;
